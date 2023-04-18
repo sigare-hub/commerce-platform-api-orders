@@ -1,0 +1,52 @@
+openapi: 3.0.0
+info:
+  title: API de Produtos
+  version: 1.0.0
+paths:
+  /produtos:
+    get:
+      summary: Retorna a lista de produtos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    nome:
+                      type: string
+                    preco:
+                      type: number
+                    descricao:
+                      type: string
+  /produtos/{id}:
+    get:
+      summary: Retorna um produto específico pelo ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID do produto
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  nome:
+                    type: string
+                  preco:
+                    type: number
+                  descricao:
+                    type: string

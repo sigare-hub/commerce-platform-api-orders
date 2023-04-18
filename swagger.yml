@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: API de Pedidos
+  version: 1.0.0
+paths:
+  /pedidos:
+    get:
+      summary: Retorna a lista de pedidos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    produtos:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Produto'
+components:
+  schemas:
+    Produto:
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        preco:
+          type: number
+        descricao:
+          type: string
