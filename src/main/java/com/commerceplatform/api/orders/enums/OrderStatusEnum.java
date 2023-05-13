@@ -1,10 +1,11 @@
 package com.commerceplatform.api.orders.enums;
 
 public enum OrderStatusEnum {
-    CREATE("CREATE"),
-    SHIPPING("SHIPPING"),
-    DELIVERED("DELIVERED"),
-    PAID("PAID");
+    ORDER_PLACED("PEDIDO_REALIZADO"),
+    PROCESSING("PROCESSANDO"),
+    PREPARING_FOR_SHIPPING("PREPARANDO_PARA_ENVIO"),
+    SENT("ENVIADO"),
+    DELIVERED("ENTREGUE");
 
     private final String value;
 
@@ -14,5 +15,4 @@ public enum OrderStatusEnum {
     public String getValue() {
         return this.value;
     }
-
 }
