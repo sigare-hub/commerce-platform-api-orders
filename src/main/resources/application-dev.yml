@@ -1,0 +1,39 @@
+## API Definitions
+#server:
+#  servlet:
+#    context-path: /api
+#  port: 4002
+#
+## H2 Database Configuration
+#spring:
+#  datasource:
+#    url: jdbc:h2:mem:testdb
+#    driver-class-name: org.h2.Driver
+#    username: sa
+#    password:
+#  h2:
+#    console:
+#      enabled: true
+#      path: /h2-console
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#
+## Custom Definitions
+### Secutiry
+#security:
+#  jwt:
+#    expiration: 3600000
+#    secret: $2a$12$yK6MT6MH.ALvfRt/t1/Qd.0f6GpWUQvNlfrh06ruzOIMIPm1D4qoe
+#
+### Redis
+#redis:
+#  recoverypassword:
+#    timeout: 5
+#
+### Logging
+#logging:
+#  level:
+#    root: INFO
+#    org.springframework.web: DEBUG
+#    com.commerceplatform.api.orders: DEBUG

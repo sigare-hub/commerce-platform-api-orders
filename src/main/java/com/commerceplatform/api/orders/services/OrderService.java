@@ -1,5 +1,6 @@
 package com.commerceplatform.api.orders.services;
 
+import com.commerceplatform.api.orders.enums.OrderStatus;
 import com.commerceplatform.api.orders.integrations.api.products.ApiProductsIntegration;
 import com.commerceplatform.api.orders.integrations.api.products.dtos.ProductDto;
 import com.commerceplatform.api.orders.models.jpa.OrderModel;
@@ -18,13 +19,9 @@ public class OrderService {
         this.apiProductsIntegration = apiProductsIntegration;
     }
 
-    public OrderModel createOrder(Long customerId, List<Long> productIds) {
-        List<ProductDto> products = apiProductsIntegration.getProducts();
-        System.out.println(products);
-
+    public OrderModel createOrder(Long customerId, List<Integer> productIds) {
         var order = new OrderModel();
-        order.setCustomerId(customerId);
-        order.setproductIds(productIds);
+        order.setStatus(OrderStatus.ORDER_PLACED);
         return orderRepository.save(order);
     }
 }
