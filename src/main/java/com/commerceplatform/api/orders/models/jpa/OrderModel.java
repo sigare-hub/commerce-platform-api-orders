@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "order")
+@Table(name = "orders")
 public class OrderModel {
 
     @Id
@@ -23,7 +23,7 @@ public class OrderModel {
     private double total;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
+    @JoinColumn(name = "customer_id", referencedColumnName = "id")
     private Customer customer;
 
     @Enumerated(EnumType.STRING)
