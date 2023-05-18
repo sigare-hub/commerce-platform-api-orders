@@ -24,7 +24,8 @@ public class ApplicationConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.httpBasic().and().authorizeHttpRequests()
-            .requestMatchers(HttpMethod.POST, "/order/**").permitAll()
+            .requestMatchers("/order/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/order-details/**").permitAll()
             .anyRequest().authenticated().and()
             .csrf().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

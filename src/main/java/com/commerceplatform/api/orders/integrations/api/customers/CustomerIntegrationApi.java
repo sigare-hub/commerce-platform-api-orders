@@ -1,6 +1,7 @@
-package com.commerceplatform.api.orders.integrations.api.products;
+package com.commerceplatform.api.orders.integrations.api.customers;
 
-import com.commerceplatform.api.orders.integrations.api.products.dtos.ProductDto;
+import com.commerceplatform.api.orders.integrations.api.Endpoints;
+import com.commerceplatform.api.orders.integrations.api.customers.dtos.CustomerDto;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -11,29 +12,24 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component
-public class ApiProductsIntegration {
+public class CustomerIntegrationApi {
     private final RestTemplate restTemplate;
     private final HttpHeaders headers;
 
-    public ApiProductsIntegration() {
+    public CustomerIntegrationApi() {
         this.restTemplate = new RestTemplate();
         this.headers = new HttpHeaders();
     }
 
-    public List<ProductDto> getProductsByIds(List<Long> ids) {
+    public List<CustomerDto> getProducts() {
         try {
-            String url = "http://localhost:4001/api/product";
-            Map<String, List<Long>> requestBody = new HashMap<>();
-            requestBody.put("ids", ids);
-
-            HttpEntity<Map<String, List<Long>>> request = new HttpEntity<>(requestBody, this.headers);
-            ResponseEntity<List<ProductDto>> response = restTemplate
-                .exchange(url, HttpMethod.GET, request, new ParameterizedTypeReference<List<ProductDto>>() {});
+            HttpEntity<CustomerDto> request = new HttpEntity<>(null, this.headers);
+            String url = Endpoints.apiCustomerUrl();
+            ResponseEntity<List<CustomerDto>> response = restTemplate
+                    .exchange(url, HttpMethod.GET, request, new ParameterizedTypeReference<List<CustomerDto>>() {});
             return response.getBody();
         } catch (RestClientException e) {
             // tratamento de exceção aqui, por exemplo, logar o erro e retornar uma lista vazia

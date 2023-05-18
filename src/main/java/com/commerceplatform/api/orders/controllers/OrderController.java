@@ -1,15 +1,14 @@
 package com.commerceplatform.api.orders.controllers;
 
+import com.commerceplatform.api.orders.dtos.OrderDto;
 import com.commerceplatform.api.orders.models.jpa.OrderModel;
 import com.commerceplatform.api.orders.services.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/order")
@@ -22,10 +21,18 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<OrderModel> createOrder() {
+    public ResponseEntity<OrderModel> create(@RequestBody OrderDto orderDto) {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(orderDto));
+    }
 
-        List<Integer> dto = new ArrayList<>();
-        Long customerId = 3L;
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(customerId, dto));
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderModel> findById(@PathVariable Long id) {
+        Optional<OrderModel> order = orderService.findById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(order.get());
+    }
+
+    @GetMapping
+    public List<OrderModel> getAllOrders() {
+        return orderService.findAll();
     }
 }
