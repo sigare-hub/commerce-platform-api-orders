@@ -1,7 +1,7 @@
 package com.commerceplatform.api.orders.dtos;
 
 import com.commerceplatform.api.orders.enums.OrderStatus;
-import com.commerceplatform.api.orders.models.jpa.OrderItem;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +19,10 @@ public class OrderDto {
     private double total;
     private Long customer;
     private OrderStatus status;
+
+    @JsonProperty("order_place_in")
     private LocalDateTime orderPlacedIn = LocalDateTime.now();
-    private List<OrderItem> orderItems;
+
+    @JsonProperty("order_items")
+    private List<OrderItemDto> orderItems;
 }

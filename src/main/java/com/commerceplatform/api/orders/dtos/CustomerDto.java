@@ -1,4 +1,4 @@
-package com.commerceplatform.api.orders.integrations.api.customers.dtos;
+package com.commerceplatform.api.orders.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

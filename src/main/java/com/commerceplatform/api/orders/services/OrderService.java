@@ -1,11 +1,8 @@
 package com.commerceplatform.api.orders.services;
 
 import com.commerceplatform.api.orders.dtos.OrderDto;
-import com.commerceplatform.api.orders.dtos.mappers.OrderDtoMapper;
-import com.commerceplatform.api.orders.integrations.api.products.ApiProductsIntegration;
-import com.commerceplatform.api.orders.integrations.api.products.dtos.ProductDto;
-import com.commerceplatform.api.orders.models.jpa.Customer;
-import com.commerceplatform.api.orders.models.jpa.OrderItem;
+import com.commerceplatform.api.orders.dtos.OrderItemDto;
+import com.commerceplatform.api.orders.integrations.api.connections.ApiProductsIntegration;
 import com.commerceplatform.api.orders.models.jpa.OrderModel;
 import com.commerceplatform.api.orders.repositories.OrderRepository;
 import jakarta.transaction.Transactional;
@@ -28,17 +25,19 @@ public class OrderService {
     @Transactional
     public OrderModel createOrder(OrderDto input) {
         List<Long> ids = new ArrayList<>();
+        List<OrderItemDto> orderItems = input.getOrderItems();
 
-        for(OrderItem product : input.getOrderItems()) {
-            ids.add(product.getProduct().getId());
+        if(!orderItems.isEmpty()) {
+            for (OrderItemDto orderItem : orderItems) {
+                ids.add(orderItem.getProductId());
+            }
         }
 
         var products = apiProductsIntegration.getProductsByIds(ids);
         System.out.println(products);
-
-        var customer = new Customer();
-        customer.setId(input.getCustomer());
-        return orderRepository.save(OrderDtoMapper.mapper(new Customer(), input));
+//
+//        var customer = new Customer();
+        return null;
     }
 //
 //    @Transactional

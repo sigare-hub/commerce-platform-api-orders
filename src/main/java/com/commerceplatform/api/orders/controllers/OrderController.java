@@ -22,7 +22,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderModel> create(@RequestBody OrderDto orderDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(orderDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(orderDto));
     }
 
     @GetMapping("/{id}")
