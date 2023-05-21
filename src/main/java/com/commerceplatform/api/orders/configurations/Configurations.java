@@ -14,8 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @EnableGlobalAuthentication
 @Configuration
-public class ApplicationConfig {
-
+public class Configurations {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
@@ -24,9 +23,10 @@ public class ApplicationConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.httpBasic().and().authorizeHttpRequests()
-            .requestMatchers("/order/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/order-details/**").permitAll()
-            .anyRequest().authenticated().and()
+            .requestMatchers(HttpMethod.GET,"/order").permitAll()
+            .requestMatchers(HttpMethod.POST, "/order").permitAll()
+            .requestMatchers(HttpMethod.GET, "/order-details").permitAll()
+            .anyRequest().permitAll().and()
             .csrf().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         return http.build();

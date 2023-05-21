@@ -4,6 +4,7 @@ import com.commerceplatform.api.orders.dtos.OrderDto;
 import com.commerceplatform.api.orders.dtos.OrderItemDto;
 import com.commerceplatform.api.orders.dtos.ProductDto;
 import com.commerceplatform.api.orders.dtos.mappers.OrderDtoMapper;
+import com.commerceplatform.api.orders.exceptions.BadRequestException;
 import com.commerceplatform.api.orders.integrations.api.connections.ApiProductsIntegration;
 import com.commerceplatform.api.orders.models.jpa.Customer;
 import com.commerceplatform.api.orders.models.jpa.OrderModel;
@@ -30,7 +31,7 @@ public class OrderService {
         List<OrderItemDto> orderItems = input.getOrderItems();
 
         if(orderItems.isEmpty()) {
-            throw new RuntimeException("Você não pode criar um pedido sem produtos");
+            throw new BadRequestException("You cannot create an order without at least informing an item");
         }
 
         List<OrderItemDto> validOrderItems = validateOrderItems(orderItems);
@@ -43,7 +44,7 @@ public class OrderService {
         } else {
             System.out.println("Alguns itens de pedido são inválidos.");
         }
-        throw new RuntimeException("Bad request");
+        throw new BadRequestException("Unable to create order");
     }
 
     private List<OrderItemDto> validateOrderItems(List<OrderItemDto> orderItems) {

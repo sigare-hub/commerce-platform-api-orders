@@ -20,19 +20,19 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @GetMapping
+    public List<OrderModel> getAllOrders() {
+        return orderService.findAll();
+    }
+
     @PostMapping
     public ResponseEntity<OrderModel> create(@RequestBody OrderDto orderDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(orderDto));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<OrderModel> findById(@PathVariable Long id) {
-        Optional<OrderModel> order = orderService.findById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(order.get());
-    }
-
-    @GetMapping
-    public List<OrderModel> getAllOrders() {
-        return orderService.findAll();
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<OrderModel> findById(@PathVariable Long id) {
+//        Optional<OrderModel> order = orderService.findById(id);
+//        return ResponseEntity.status(HttpStatus.OK).body(order.get());
+//    }
 }

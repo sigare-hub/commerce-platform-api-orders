@@ -32,6 +32,8 @@ public class OrderDtoMapper {
             orderItem.setPrice(orderItemDto.getPrice());
             orderItem.setQuantity(orderItemDto.getQuantity());
             orderItem.setOrder(order);
+
+            orderItems.add(orderItem);
         }
 
         order.setOrderItems(orderItems);
