@@ -2,7 +2,10 @@ package com.commerceplatform.api.orders.services;
 
 import com.commerceplatform.api.orders.dtos.OrderDto;
 import com.commerceplatform.api.orders.dtos.OrderItemDto;
+import com.commerceplatform.api.orders.dtos.ProductDto;
+import com.commerceplatform.api.orders.dtos.mappers.OrderDtoMapper;
 import com.commerceplatform.api.orders.integrations.api.connections.ApiProductsIntegration;
+import com.commerceplatform.api.orders.models.jpa.Customer;
 import com.commerceplatform.api.orders.models.jpa.OrderModel;
 import com.commerceplatform.api.orders.repositories.OrderRepository;
 import jakarta.transaction.Transactional;
@@ -24,50 +27,55 @@ public class OrderService {
 
     @Transactional
     public OrderModel createOrder(OrderDto input) {
-        List<Long> ids = new ArrayList<>();
         List<OrderItemDto> orderItems = input.getOrderItems();
 
-        if(!orderItems.isEmpty()) {
-            for (OrderItemDto orderItem : orderItems) {
-                ids.add(orderItem.getProductId());
-            }
+        if(orderItems.isEmpty()) {
+            throw new RuntimeException("Você não pode criar um pedido sem produtos");
         }
 
-        var products = apiProductsIntegration.getProductsByIds(ids);
-        System.out.println(products);
-//
-//        var customer = new Customer();
-        return null;
+        List<OrderItemDto> validOrderItems = validateOrderItems(orderItems);
+
+        var customer = new Customer();
+        customer.setId(input.getCustomer());
+
+        if(validOrderItems.size() == orderItems.size()) {
+            return orderRepository.save(OrderDtoMapper.mapper(input, customer));
+        } else {
+            System.out.println("Alguns itens de pedido são inválidos.");
+        }
+        throw new RuntimeException("Bad request");
     }
-//
-//    @Transactional
-//    public OrderModel createOrder(OrderDto input) {
-//        var customer = new Customer();
-//        customer.setId(input.getCustomer());
-//
-//        List<OrderItem> validOrderItems = new ArrayList<>();
-//
-//        for (OrderItem orderItemDto : input.getOrderItems()) {
-//            Long productId = orderItemDto.getProduct();
-//            Optional<Product> productOptional = productRepository.findById(productId);
-//
-//            if (productOptional.isPresent()) {
-//                Product product = productOptional.get();
-//
-//                OrderItem orderItem = new OrderItem();
-//                orderItem.setProduct(product);
-//                orderItem.setQuantity(orderItemDto.getQuantity());
-//                orderItem.setPrice(orderItemDto.getPrice());
-//
-//                validOrderItems.add(orderItem);
-//            }
-//        }
-//
-//        OrderModel order = OrderDtoMapper.mapper(customer, input);
-//        order.setOrderItems(validOrderItems);
-//
-//        return orderRepository.save(order);
-//    }
+
+    private List<OrderItemDto> validateOrderItems(List<OrderItemDto> orderItems) {
+        // Pegar somente os ids de cada item no pedido
+        List<Long> productIds = orderItems.stream()
+                .map(OrderItemDto::getProductId).toList();
+
+        // Verificar na API de produtos se os produtos existem
+        List<ProductDto> products = apiProductsIntegration.getProductsByIds(productIds);
+        var validOrderItems = new ArrayList<OrderItemDto>();
+        var invalidOrderItems = new ArrayList<OrderItemDto>();
+
+        /// Validar se o produto existe e salvar na lista de itens válidos
+        for (OrderItemDto orderItem : orderItems) {
+            Long orderItemId = orderItem.getProductId();
+            boolean productExists = products
+                .stream()
+                .anyMatch(product -> product.getId().equals(orderItemId));
+
+            if (productExists) {
+                validOrderItems.add(orderItem);
+            } else {
+                invalidOrderItems.add(orderItem);
+            }
+        }
+        if(!invalidOrderItems.isEmpty()) {
+            // Lançar uma custom exception que retorne esses ids inválidos em um JSON
+            throw new RuntimeException("Invalid products: " + invalidOrderItems);
+        }
+
+        return validOrderItems;
+    }
 
     public List<OrderModel> findAll() {
         return this.orderRepository.findAll();
