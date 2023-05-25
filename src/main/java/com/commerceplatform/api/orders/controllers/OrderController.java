@@ -30,9 +30,9 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(orderDto));
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<OrderModel> findById(@PathVariable Long id) {
-//        Optional<OrderModel> order = orderService.findById(id);
-//        return ResponseEntity.status(HttpStatus.OK).body(order.get());
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderModel> findById(@PathVariable Long id) {
+        Optional<OrderModel> order = orderService.findById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(order.get());
+    }
 }

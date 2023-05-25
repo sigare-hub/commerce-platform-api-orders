@@ -23,7 +23,7 @@ public class OrderItem {
 
     private double price;
 
-    public OrderItem() {
+    public  OrderItem() {
     }
 
     public OrderItem(Long id, Product product, OrderModel order, int quantity, double price) {

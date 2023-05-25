@@ -2,7 +2,6 @@ package com.commerceplatform.api.orders.dtos.mappers;
 
 import com.commerceplatform.api.orders.dtos.OrderDto;
 import com.commerceplatform.api.orders.dtos.OrderItemDto;
-import com.commerceplatform.api.orders.models.jpa.Customer;
 import com.commerceplatform.api.orders.models.jpa.OrderItem;
 import com.commerceplatform.api.orders.models.jpa.OrderModel;
 import com.commerceplatform.api.orders.models.jpa.Product;
@@ -10,16 +9,15 @@ import com.commerceplatform.api.orders.models.jpa.Product;
 import java.util.ArrayList;
 
 public class OrderDtoMapper {
+
     private OrderDtoMapper() {
         throw new IllegalStateException("Você não pode instanciar essa classe de utilitário");
     }
 
-
-    public static OrderModel mapper(OrderDto orderDto, Customer customer) {
+    public static OrderModel mapper(OrderDto orderDto) {
         var order = new OrderModel();
         var orderItems = new ArrayList<OrderItem>();
 
-        order.setCustomer(customer);
         order.setTotal(orderDto.getTotal());
         order.setStatus(orderDto.getStatus());
 
@@ -44,7 +42,6 @@ public class OrderDtoMapper {
             .total(orderDto.getTotal())
             .status(orderDto.getStatus())
             .orderPlacedIn(orderDto.getOrderPlacedIn())
-            .customer(customer)
             .build();
     }
 }

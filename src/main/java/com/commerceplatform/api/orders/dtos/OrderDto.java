@@ -17,7 +17,9 @@ import java.util.List;
 public class OrderDto {
     private Long id;
     private double total;
-    private Long customer;
+
+    @JsonProperty("customer_id")
+    private Long customerId;
     private OrderStatus status;
 
     @JsonProperty("order_place_in")

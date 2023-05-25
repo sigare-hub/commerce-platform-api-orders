@@ -18,9 +18,9 @@ public class OrderModel {
 
     private double total;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "customer_id", referencedColumnName = "id")
-    private Customer customer;
+//    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+//    @JoinColumn(name = "customer_id", referencedColumnName = "id", nullable = true)
+//    private Customer customer;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
@@ -33,10 +33,9 @@ public class OrderModel {
     public OrderModel() {
     }
 
-    public OrderModel(Long id, double total, Customer customer, OrderStatus status, LocalDateTime orderPlacedIn, List<OrderItem> orderItems) {
+    public OrderModel(Long id, double total, OrderStatus status, LocalDateTime orderPlacedIn, List<OrderItem> orderItems) {
         this.id = id;
         this.total = total;
-        this.customer = customer;
         this.status = status;
         this.orderPlacedIn = orderPlacedIn;
         this.orderItems = orderItems;
@@ -56,14 +55,6 @@ public class OrderModel {
 
     public void setTotal(double total) {
         this.total = total;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
     }
 
     public OrderStatus getStatus() {

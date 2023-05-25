@@ -9,6 +9,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestClientException;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -94,6 +95,16 @@ public class ResourceHandler {
             .message(h.getMessage())
             .httpStatus(HttpStatus.METHOD_NOT_ALLOWED)
             .statusCode(HttpStatus.METHOD_NOT_ALLOWED.value())
+            .build());
+    }
+
+    @ExceptionHandler(RestClientException.class)
+    public ResponseEntity<ErrorResponseDto> restClientException(RestClientException r) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ErrorResponseDto
+            .builder()
+            .message(r.getMessage())
+            .httpStatus(HttpStatus.BAD_GATEWAY)
+            .statusCode(HttpStatus.BAD_GATEWAY.value())
             .build());
     }
 

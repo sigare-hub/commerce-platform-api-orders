@@ -1,9 +1,11 @@
 package com.commerceplatform.api.orders.models.jpa;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 
 @Entity
 @Table(name = "customer")
+@Builder
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
