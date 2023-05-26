@@ -1,5 +1,6 @@
 - receber os dados de entrada
 - verificar nesses dados de entrada, se foi passado o customer id, caso nao, lancar excepetion
+    - bater na api de integracao com o customer, e verificar se esse customer de fato existe
 - verificar nesses dados de entrada, se foi passado o array com order items, caso nao, lancar excepetion
 - verificar se o customer ja existe na minha base, caso nao, criar um novo, se sim, so reaproveitar o id
 - validar os items que vieram nos dados de entrada

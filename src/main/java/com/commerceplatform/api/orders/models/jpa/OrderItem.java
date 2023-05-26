@@ -67,7 +67,7 @@ public class OrderItem {
     }
 
     public double getPrice() {
-        return price * this.quantity;
+        return price;
     }
 
     public void setPrice(double price) {

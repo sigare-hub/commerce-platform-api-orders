@@ -33,6 +33,7 @@ public class OrderService {
         this.productRepository = productRepository;
     }
 
+    // secured route -> necessary bearer token
     @Transactional
     public OrderModel createOrder(OrderDto input) {
         try {
