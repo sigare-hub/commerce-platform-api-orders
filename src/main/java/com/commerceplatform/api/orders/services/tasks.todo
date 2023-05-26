@@ -1,0 +1,12 @@
+- receber os dados de entrada
+- verificar nesses dados de entrada, se foi passado o customer id, caso nao, lancar excepetion
+- verificar nesses dados de entrada, se foi passado o array com order items, caso nao, lancar excepetion
+- verificar se o customer ja existe na minha base, caso nao, criar um novo, se sim, so reaproveitar o id
+- validar os items que vieram nos dados de entrada
+    - chamar a api de products, e mandar o id de cada produto que veio nos dados de entrada
+        - se todos o produtos de fato existem na api de produtos, retorna o valid products
+        - se nao, retornar um validation exception com os ids dos produtos inválidos
+    - validar nesses produtos validos, se ja existem na base local
+        - se ja existe nao salva
+        - se nao existe, salva
+- criar a order model
