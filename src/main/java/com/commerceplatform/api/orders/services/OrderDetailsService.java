@@ -17,6 +17,6 @@ public class OrderDetailsService {
     }
 
     public Optional<List<OrderItem>> getOrderDetailsByOrderId(Long orderId) {
-        return orderItemRepository.findByOrderId(orderId);
+        return orderItemRepository.findAllByOrderId(orderId);
     }
 }

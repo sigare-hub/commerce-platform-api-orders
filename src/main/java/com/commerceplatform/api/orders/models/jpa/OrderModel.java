@@ -27,7 +27,8 @@ public class OrderModel {
 
     private LocalDateTime orderPlacedIn = LocalDateTime.now(ZoneOffset.UTC);
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true)
+    @JoinColumn(name = "order_id",referencedColumnName = "id",insertable = false,updatable = false)
     private List<OrderItem> orderItems;
 
     public OrderModel() {
