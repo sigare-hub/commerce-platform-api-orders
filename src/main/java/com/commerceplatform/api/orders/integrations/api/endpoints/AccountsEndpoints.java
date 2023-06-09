@@ -1,13 +1,13 @@
 package com.commerceplatform.api.orders.integrations.api.endpoints;
 
-public class CustomerEndpoints {
+public class AccountsEndpoints {
     private static final String API_CUSTOMER_URL = "http://localhost:4000/api";
 
-    private CustomerEndpoints() {
+    private AccountsEndpoints() {
         throw new IllegalStateException("Utility class");
     }
 
-    public static String getCustomerById(Long customerId) {
-        return API_CUSTOMER_URL + "/product/by-ids?id=" + customerId;
+    public static String getUserById(Long customerId) {
+        return API_CUSTOMER_URL + "/user/" + customerId;
     }
 }

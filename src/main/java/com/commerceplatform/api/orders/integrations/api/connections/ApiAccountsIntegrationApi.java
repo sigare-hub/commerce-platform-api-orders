@@ -1,7 +1,7 @@
 package com.commerceplatform.api.orders.integrations.api.connections;
 
 import com.commerceplatform.api.orders.dtos.CustomerDto;
-import com.commerceplatform.api.orders.integrations.api.endpoints.CustomerEndpoints;
+import com.commerceplatform.api.orders.integrations.api.endpoints.AccountsEndpoints;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -12,11 +12,11 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class ApiCustomerIntegrationApi {
+public class ApiAccountsIntegrationApi {
     private final RestTemplate restTemplate;
     private final HttpHeaders headers;
 
-    public ApiCustomerIntegrationApi() {
+    public ApiAccountsIntegrationApi() {
         this.restTemplate = new RestTemplate();
         this.headers = new HttpHeaders();
     }
@@ -26,8 +26,8 @@ public class ApiCustomerIntegrationApi {
             HttpEntity<?> request = new HttpEntity<>(null, this.headers);
             ResponseEntity<CustomerDto> response = restTemplate
                 .exchange(
-                    CustomerEndpoints.getCustomerById(customerIdParam),
-                    HttpMethod.GET, request, new ParameterizedTypeReference<CustomerDto>() {});
+                    AccountsEndpoints.getUserById(customerIdParam),
+                    HttpMethod.GET, request, CustomerDto.class);
             return response.getBody();
         } catch (RestClientException e) {
             throw new RestClientException(e.getMessage());

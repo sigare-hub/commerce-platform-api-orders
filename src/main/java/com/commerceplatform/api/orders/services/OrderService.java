@@ -1,5 +1,6 @@
 package com.commerceplatform.api.orders.services;
 
+import com.commerceplatform.api.orders.dtos.CustomerDto;
 import com.commerceplatform.api.orders.dtos.OrderDto;
 import com.commerceplatform.api.orders.dtos.OrderItemDto;
 import com.commerceplatform.api.orders.dtos.ProductDto;
@@ -7,6 +8,7 @@ import com.commerceplatform.api.orders.enums.OrderStatus;
 import com.commerceplatform.api.orders.exceptions.BadRequestException;
 import com.commerceplatform.api.orders.exceptions.NotFoundException;
 import com.commerceplatform.api.orders.exceptions.ValidationException;
+import com.commerceplatform.api.orders.integrations.api.connections.ApiAccountsIntegrationApi;
 import com.commerceplatform.api.orders.integrations.api.connections.ApiProductsIntegration;
 import com.commerceplatform.api.orders.models.jpa.Customer;
 import com.commerceplatform.api.orders.models.jpa.OrderItem;
@@ -23,13 +25,22 @@ import java.util.*;
 
 @Service
 public class OrderService {
+    private final ApiAccountsIntegrationApi apiAccountsIntegration;
     private final ApiProductsIntegration apiProductsIntegration;
     private final CustomerRepository customerRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
 
-    public OrderService(ApiProductsIntegration apiProductsIntegration, CustomerRepository customerRepository, OrderRepository orderRepository, ProductRepository productRepository, OrderItemRepository orderItemRepository) {
+    public OrderService(
+        ApiAccountsIntegrationApi apiAccountsIntegration,
+        ApiProductsIntegration apiProductsIntegration,
+        CustomerRepository customerRepository,
+        OrderRepository orderRepository,
+        ProductRepository productRepository,
+        OrderItemRepository orderItemRepository
+    ) {
+        this.apiAccountsIntegration = apiAccountsIntegration;
         this.apiProductsIntegration = apiProductsIntegration;
         this.customerRepository = customerRepository;
         this.orderRepository = orderRepository;
@@ -39,37 +50,30 @@ public class OrderService {
 
     // secured route -> necessary bearer token
     @Transactional
-    public Order createOrder(OrderDto input) {
+    public OrderDto createOrder(OrderDto input) {
         var inputCustomerId = input.getCustomerId();
         var inputOrderItemsDto = input.getOrderItems();
 
-//        if(Objects.isNull(inputCustomerId)) {
-//            throw new BadRequestException("Attribute 'customer_id' cannot be null");
-//        }
+        if(Objects.isNull(inputCustomerId)) {
+            throw new BadRequestException("Attribute 'customer_id' cannot be null");
+        }
 
         if(inputOrderItemsDto.isEmpty()) {
             throw new BadRequestException("You cannot create an order without at least informing an item");
         }
 
-        // verificar se exite o customerId
-        var existCustomer = customerRepository.findById(inputCustomerId);
-        if(existCustomer.isEmpty()) {
-            // apiCustomerIntegration para verificar se o usuario eh válido
-            var customer = new Customer();
-            customer.setId(input.getCustomerId());
-            customerRepository.save(customer);
-        }
-
-//        // validar os items no meu pedido na api de produtos
+        Customer validatedCustomer = validateUser(inputCustomerId);
         List<OrderItemDto> validatedOrderItems = validateOrderItems(inputOrderItemsDto);
+
         ArrayList<OrderItem> mapperOrderItems = getOrderItems(validatedOrderItems);
 
         var order = new Order();
         var total = mapperOrderItems.stream()
-                .mapToDouble(orderItem -> orderItem.getPrice() * orderItem.getQuantity())
-                .sum();
+            .mapToDouble(orderItem -> orderItem.getPrice() * orderItem.getQuantity())
+            .sum();
 
         order.setTotal(total);
+        order.setCustomer(validatedCustomer);
         order.setStatus(OrderStatus.PROCESSING);
 
         var createdOrder = orderRepository.save(order);
@@ -79,19 +83,14 @@ public class OrderService {
             orderItemRepository.save(orderItem);
         }
 
-        return createdOrder;
+        return getOrderItemsPerOrder(createdOrder);
     }
 
     private ArrayList<OrderItem> getOrderItems(List<OrderItemDto> validatedOrderItems) {
-        // converter os items DTO em item comum
         var mapperOrderItems = new ArrayList<OrderItem>();
 
         for(OrderItemDto validatedItem : validatedOrderItems) {
-            /*
-            * Se o produto que eu ja validei, existe na api de produtos,  mas nao existe localmente
-            * eu salvo ele localmente, caso contrario, eu so pego ele que ja existe e atribuo
-            * */
-            Optional<Product> existingProductOptional = productRepository.findByExternalId(validatedItem.getProductId());
+            var existingProductOptional = productRepository.findByExternalId(validatedItem.getProductId());
 
             var orderItem = new OrderItem();
 
@@ -111,22 +110,33 @@ public class OrderService {
         return mapperOrderItems;
     }
 
-    private List<OrderItemDto> validateOrderItems(List<OrderItemDto> orderItems) {
-        // Pegar somente os ids de cada item no pedido
-        List<Long> productIds = orderItems.stream()
-                .map(OrderItemDto::getProductId).toList();
 
-        // Verificar na API de produtos se os produtos existem
+    private Customer validateUser(Long id) {
+        CustomerDto customerDto = apiAccountsIntegration.getCustomerById(id);
+
+        var localCustomerOpt = customerRepository.findById(customerDto.getId());
+
+        if(localCustomerOpt.isEmpty()) {
+            var customer = new Customer();
+            customer.setId(customerDto.getId());
+            return customerRepository.save(customer);
+        }
+        return localCustomerOpt.get();
+    }
+
+    private List<OrderItemDto> validateOrderItems(List<OrderItemDto> orderItems) {
+        List<Long> productIds = orderItems.stream()
+            .map(OrderItemDto::getProductId).toList();
+
         List<ProductDto> products = apiProductsIntegration.getProductsByIds(productIds);
         var validOrderItems = new ArrayList<OrderItemDto>();
         var invalidOrderItems = new ArrayList<OrderItemDto>();
 
-        /// Validar se o produto existe e salvar na lista de itens válidos
         for (OrderItemDto orderItem : orderItems) {
             Long orderItemId = orderItem.getProductId();
             boolean productExists = products
-                    .stream()
-                    .anyMatch(product -> product.getId().equals(orderItemId));
+                .stream()
+                .anyMatch(product -> product.getId().equals(orderItemId));
 
             if (productExists) {
                 validOrderItems.add(orderItem);

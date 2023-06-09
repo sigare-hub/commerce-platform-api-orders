@@ -1,9 +1,6 @@
 package com.commerceplatform.api.orders.controllers;
 
 import com.commerceplatform.api.orders.dtos.OrderDto;
-import com.commerceplatform.api.orders.dtos.inputs.CreateOrderInput;
-import com.commerceplatform.api.orders.models.jpa.OrderItem;
-import com.commerceplatform.api.orders.models.jpa.Order;
 import com.commerceplatform.api.orders.services.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +19,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> create(@RequestBody OrderDto input) {
+    public ResponseEntity<OrderDto> create(@RequestBody OrderDto input) {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(input));
     }
 
