@@ -1,9 +1,9 @@
 package com.commerceplatform.api.orders.dtos.mappers;
 
 import com.commerceplatform.api.orders.dtos.OrderItemDto;
-import com.commerceplatform.api.orders.dtos.ProductDto;
 import com.commerceplatform.api.orders.models.jpa.OrderItem;
 import com.commerceplatform.api.orders.models.jpa.Order;
+import com.commerceplatform.api.orders.models.jpa.Product;
 
 public class OrderItemDtoMapper {
     private OrderItemDtoMapper() {
@@ -11,14 +11,14 @@ public class OrderItemDtoMapper {
     }
 
     public static OrderItem mapper(
-            OrderItemDto orderItemDto,
-            ProductDto productDto,
-            Order order
+        OrderItemDto orderItemDto,
+        Product product,
+        Order order
     ) {
         return OrderItem.builder()
             .id(orderItemDto.getId())
             .price(orderItemDto.getPrice())
-            .product(ProductDtoMapper.mapper(productDto))
+            .product(product)
             .order(order)
             .quantity(orderItemDto.getQuantity())
             .build();

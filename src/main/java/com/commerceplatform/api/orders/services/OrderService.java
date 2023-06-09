@@ -3,9 +3,9 @@ package com.commerceplatform.api.orders.services;
 import com.commerceplatform.api.orders.dtos.OrderDto;
 import com.commerceplatform.api.orders.dtos.OrderItemDto;
 import com.commerceplatform.api.orders.dtos.ProductDto;
-import com.commerceplatform.api.orders.dtos.mappers.OrderDtoMapper;
 import com.commerceplatform.api.orders.enums.OrderStatus;
 import com.commerceplatform.api.orders.exceptions.BadRequestException;
+import com.commerceplatform.api.orders.exceptions.NotFoundException;
 import com.commerceplatform.api.orders.exceptions.ValidationException;
 import com.commerceplatform.api.orders.integrations.api.connections.ApiProductsIntegration;
 import com.commerceplatform.api.orders.models.jpa.Customer;
@@ -16,10 +16,7 @@ import com.commerceplatform.api.orders.repositories.CustomerRepository;
 import com.commerceplatform.api.orders.repositories.OrderItemRepository;
 import com.commerceplatform.api.orders.repositories.OrderRepository;
 import com.commerceplatform.api.orders.repositories.ProductRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -32,11 +29,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
 
-    @PersistenceContext
-    private EntityManager em;
-
-    public OrderService(ApiProductsIntegration apiProductsIntegration, CustomerRepository customerRepository, OrderRepository orderRepository, ProductRepository productRepository,
-                        OrderItemRepository orderItemRepository) {
+    public OrderService(ApiProductsIntegration apiProductsIntegration, CustomerRepository customerRepository, OrderRepository orderRepository, ProductRepository productRepository, OrderItemRepository orderItemRepository) {
         this.apiProductsIntegration = apiProductsIntegration;
         this.customerRepository = customerRepository;
         this.orderRepository = orderRepository;
@@ -50,20 +43,21 @@ public class OrderService {
         var inputCustomerId = input.getCustomerId();
         var inputOrderItemsDto = input.getOrderItems();
 
-        // verificar se exite o customerId
-        if(Objects.nonNull(inputCustomerId)) {
-            var existCustomer = customerRepository.findById(inputCustomerId);
-            if(existCustomer.isEmpty()) {
-                // apiCustomerIntegration para verificar se o usuario eh válido
-                var customer = new Customer();
-                customer.setId(input.getCustomerId());
-                customerRepository.save(customer);
-            }
-        }
+//        if(Objects.isNull(inputCustomerId)) {
+//            throw new BadRequestException("Attribute 'customer_id' cannot be null");
+//        }
 
-        // verificar se existe items no meu pedido
         if(inputOrderItemsDto.isEmpty()) {
             throw new BadRequestException("You cannot create an order without at least informing an item");
+        }
+
+        // verificar se exite o customerId
+        var existCustomer = customerRepository.findById(inputCustomerId);
+        if(existCustomer.isEmpty()) {
+            // apiCustomerIntegration para verificar se o usuario eh válido
+            var customer = new Customer();
+            customer.setId(input.getCustomerId());
+            customerRepository.save(customer);
         }
 
 //        // validar os items no meu pedido na api de produtos
@@ -153,35 +147,47 @@ public class OrderService {
         return validOrderItems;
     }
 
-    public List<?> findAll() {
+    public List<OrderDto> findAll() {
         var orders = orderRepository.findAll();
-
-        var dt = new ArrayList<OrderDto>();
+        var orderDtos = new ArrayList<OrderDto>();
 
         for(Order order : orders) {
-            var orderItems = orderItemRepository.findOrderItemsByOrderId(order.getId());
-            var orderItemsDto = new ArrayList<OrderItemDto>();
-
-            for(OrderItem orderItem : orderItems) {
-                orderItemsDto.add(OrderItemDto.builder()
-                    .id(orderItem.getId())
-                    .orderId(orderItem.getOrder().getId())
-                    .price(orderItem.getPrice())
-                    .productId(orderItem.getProduct().getId())
-                    .quantity(orderItem.getQuantity())
-                    .build());
-            }
-
-            var dto = OrderDto.builder()
-                .id(order.getId())
-                .orderItems(orderItemsDto)
-                .build();
-            dt.add(dto);
+            var orderDto = getOrderItemsPerOrder(order);
+            orderDtos.add(orderDto);
         }
-        return dt;
+
+        return orderDtos;
     }
 
-    public List<OrderItem> findById(Long id) {
-        return orderItemRepository.findOrderItemsByOrderId(id);
+    public OrderDto findById(Long id) {
+        var order = orderRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("Order not found"));
+        return getOrderItemsPerOrder(order);
+    }
+
+    private OrderDto getOrderItemsPerOrder(Order order) {
+        var orderItems = orderItemRepository.findOrderItemsByOrderId(order.getId());
+        var orderItemsDto = new ArrayList<OrderItemDto>();
+
+        for(OrderItem orderItem : orderItems) {
+            orderItemsDto.add(OrderItemDto.builder()
+                .id(orderItem.getId())
+                .orderId(orderItem.getOrder().getId())
+                .price(orderItem.getPrice())
+                .productId(orderItem.getProduct().getId())
+                .quantity(orderItem.getQuantity())
+                .build());
+        }
+
+        var validCustomer = order.getCustomer() != null ? order.getCustomer().getId() : null;
+
+        return OrderDto.builder()
+            .id(order.getId())
+            .total(order.getTotal())
+            .customerId(validCustomer)
+            .status(order.getStatus())
+            .orderPlacedIn(order.getOrderPlacedIn())
+            .orderItems(orderItemsDto)
+            .build();
     }
 }

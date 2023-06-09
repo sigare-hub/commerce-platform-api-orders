@@ -1,8 +1,6 @@
 package com.commerceplatform.api.orders.models.jpa;
 
 import com.commerceplatform.api.orders.enums.OrderStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -11,7 +9,6 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 
 @Getter
 @Setter
@@ -30,7 +27,6 @@ public class Order implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY, optional = true)  // WIP resolve id in service
     @JoinColumn(name = "customer_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-//    @JsonIgnore
     private Customer customer;
 
     @Enumerated(EnumType.STRING)
