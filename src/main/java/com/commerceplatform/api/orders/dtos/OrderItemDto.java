@@ -1,11 +1,13 @@
 package com.commerceplatform.api.orders.dtos;
 
+import com.commerceplatform.api.orders.models.jpa.OrderItem;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -23,4 +25,7 @@ public class OrderItemDto {
     private int quantity;
 
     private double price;
+
+    public OrderItemDto(List<OrderItem> orderItems) {
+    }
 }

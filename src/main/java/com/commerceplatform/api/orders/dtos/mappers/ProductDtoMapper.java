@@ -11,8 +11,6 @@ public class ProductDtoMapper {
     public static Product mapper(ProductDto productDto) {
         return Product.builder()
             .id(productDto.getId())
-            .description(productDto.getDescription())
-            .name(productDto.getName())
             .build();
     }
 

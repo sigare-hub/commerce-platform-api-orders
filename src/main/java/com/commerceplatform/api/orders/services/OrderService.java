@@ -3,29 +3,26 @@ package com.commerceplatform.api.orders.services;
 import com.commerceplatform.api.orders.dtos.OrderDto;
 import com.commerceplatform.api.orders.dtos.OrderItemDto;
 import com.commerceplatform.api.orders.dtos.ProductDto;
+import com.commerceplatform.api.orders.dtos.mappers.OrderDtoMapper;
 import com.commerceplatform.api.orders.enums.OrderStatus;
 import com.commerceplatform.api.orders.exceptions.BadRequestException;
-import com.commerceplatform.api.orders.exceptions.NotFoundException;
 import com.commerceplatform.api.orders.exceptions.ValidationException;
 import com.commerceplatform.api.orders.integrations.api.connections.ApiProductsIntegration;
 import com.commerceplatform.api.orders.models.jpa.Customer;
 import com.commerceplatform.api.orders.models.jpa.OrderItem;
-import com.commerceplatform.api.orders.models.jpa.OrderModel;
+import com.commerceplatform.api.orders.models.jpa.Order;
 import com.commerceplatform.api.orders.models.jpa.Product;
 import com.commerceplatform.api.orders.repositories.CustomerRepository;
 import com.commerceplatform.api.orders.repositories.OrderItemRepository;
 import com.commerceplatform.api.orders.repositories.OrderRepository;
 import com.commerceplatform.api.orders.repositories.ProductRepository;
-import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.Order;
 import jakarta.transaction.Transactional;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -49,7 +46,7 @@ public class OrderService {
 
     // secured route -> necessary bearer token
     @Transactional
-    public OrderModel createOrder(OrderDto input) {
+    public Order createOrder(OrderDto input) {
         var inputCustomerId = input.getCustomerId();
         var inputOrderItemsDto = input.getOrderItems();
 
@@ -69,11 +66,11 @@ public class OrderService {
             throw new BadRequestException("You cannot create an order without at least informing an item");
         }
 
-        // validar os items no meu pedido na api de produtos
+//        // validar os items no meu pedido na api de produtos
         List<OrderItemDto> validatedOrderItems = validateOrderItems(inputOrderItemsDto);
         ArrayList<OrderItem> mapperOrderItems = getOrderItems(validatedOrderItems);
 
-        var order = new OrderModel();
+        var order = new Order();
         var total = mapperOrderItems.stream()
                 .mapToDouble(orderItem -> orderItem.getPrice() * orderItem.getQuantity())
                 .sum();
@@ -156,31 +153,35 @@ public class OrderService {
         return validOrderItems;
     }
 
-    public List<OrderModel> findAll() {
-        try {
-            EntityGraph<OrderModel> graph = em.createEntityGraph(OrderModel.class);
-            graph.addAttributeNodes("orderItems");
+    public List<?> findAll() {
+        var orders = orderRepository.findAll();
 
-            // Cria uma consulta com o EntityGraph
-            TypedQuery<OrderModel> query = em.createQuery("SELECT o FROM OrderModel o", OrderModel.class);
-            query.setHint("javax.persistence.fetchgraph", graph);
+        var dt = new ArrayList<OrderDto>();
 
-            return query.getResultList();
-        } catch (Exception e) {
-            throw new BadRequestException(e.getMessage());
+        for(Order order : orders) {
+            var orderItems = orderItemRepository.findOrderItemsByOrderId(order.getId());
+            var orderItemsDto = new ArrayList<OrderItemDto>();
+
+            for(OrderItem orderItem : orderItems) {
+                orderItemsDto.add(OrderItemDto.builder()
+                    .id(orderItem.getId())
+                    .orderId(orderItem.getOrder().getId())
+                    .price(orderItem.getPrice())
+                    .productId(orderItem.getProduct().getId())
+                    .quantity(orderItem.getQuantity())
+                    .build());
+            }
+
+            var dto = OrderDto.builder()
+                .id(order.getId())
+                .orderItems(orderItemsDto)
+                .build();
+            dt.add(dto);
         }
+        return dt;
     }
 
-    public OrderModel findById(Long id) {
-                // Cria um EntityGraph para buscar o pedido com os itens de pedido
-                EntityGraph<OrderModel> graph = em.createEntityGraph(OrderModel.class);
-        graph.addAttributeNodes("orderItems");
-
-        // Cria uma consulta com o EntityGraph
-        TypedQuery<OrderModel> query = em.createQuery("SELECT o FROM OrderModel o WHERE o.id = :id", OrderModel.class);
-        query.setParameter("id", id);
-        query.setHint("javax.persistence.fetchgraph", graph);
-
-        return query.getSingleResult();
+    public List<OrderItem> findById(Long id) {
+        return orderItemRepository.findOrderItemsByOrderId(id);
     }
 }

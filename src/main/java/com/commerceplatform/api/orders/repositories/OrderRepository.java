@@ -1,17 +1,9 @@
 package com.commerceplatform.api.orders.repositories;
 
-import com.commerceplatform.api.orders.models.jpa.OrderItem;
-import com.commerceplatform.api.orders.models.jpa.OrderModel;
-import jakarta.persistence.criteria.Order;
-import org.springframework.data.jpa.repository.EntityGraph;
+import com.commerceplatform.api.orders.models.jpa.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-
-public interface OrderRepository extends JpaRepository<OrderModel, Long> {
-    List<OrderItem> findByOrderItems(OrderItem orderItem);
-//    Optional<Order> findAllByCustomerId(Long customerId);
-    @EntityGraph(attributePaths = "orderItems.product")
-    List<OrderModel> findAll();
+@Repository
+public interface OrderRepository extends JpaRepository<Order, Long> {
 }
