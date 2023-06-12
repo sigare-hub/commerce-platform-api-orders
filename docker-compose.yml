@@ -13,5 +13,17 @@ services:
       - "3310:3306"
     volumes:
       - mysql_data_container:/data/db
+  rabbitmq:
+      image: rabbitmq:3-management
+      restart: always
+      environment:
+        - RABBITMQ_DEFAULT_USER=develop
+        - RABBITMQ_DEFAULT_PASS=develop
+      ports:
+        - "5672:5672"
+        - "15672:15672"
+      volumes:
+        - rabbitmq_container:/data/messenger
 volumes:
   mysql_data_container:
+  rabbitmq_container:
