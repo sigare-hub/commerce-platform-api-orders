@@ -1,5 +1,16 @@
 version: '3.8'
+
 services:
+  queue:
+    image: rabbitmq:management
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
   database:
     image: mysql:latest
     command: --default-authentication-plugin=mysql_native_password
@@ -13,17 +24,11 @@ services:
       - "3310:3306"
     volumes:
       - mysql_data_container:/data/db
-  rabbitmq:
-      image: rabbitmq:3-management
-      restart: always
-      environment:
-        - RABBITMQ_DEFAULT_USER=develop
-        - RABBITMQ_DEFAULT_PASS=develop
-      ports:
-        - "5672:5672"
-        - "15672:15672"
-      volumes:
-        - rabbitmq_container:/data/messenger
+
 volumes:
   mysql_data_container:
   rabbitmq_container:
+
+networks:
+  default:
+    driver: bridge
