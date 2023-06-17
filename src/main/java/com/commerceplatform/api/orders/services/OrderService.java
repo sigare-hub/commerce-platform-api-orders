@@ -4,6 +4,7 @@ import com.commerceplatform.api.orders.dtos.CustomerDto;
 import com.commerceplatform.api.orders.dtos.OrderDto;
 import com.commerceplatform.api.orders.dtos.OrderItemDto;
 import com.commerceplatform.api.orders.dtos.ProductDto;
+import com.commerceplatform.api.orders.dtos.mappers.OrderDtoMapper;
 import com.commerceplatform.api.orders.enums.OrderStatus;
 import com.commerceplatform.api.orders.exceptions.BadRequestException;
 import com.commerceplatform.api.orders.exceptions.NotFoundException;
@@ -48,6 +49,24 @@ public class OrderService {
         this.orderItemRepository = orderItemRepository;
     }
 
+    public List<OrderDto> findAll() {
+        var orders = orderRepository.findAll();
+        var orderDtos = new ArrayList<OrderDto>();
+
+        for(Order order : orders) {
+            var orderDto = getOrderItemsPerOrder(order);
+            orderDtos.add(orderDto);
+        }
+
+        return orderDtos;
+    }
+
+    public OrderDto findById(Long id) {
+        var order = orderRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+        return getOrderItemsPerOrder(order);
+    }
+
     // secured route -> necessary bearer token
     @Transactional
     public OrderDto createOrder(OrderDto input) {
@@ -62,8 +81,8 @@ public class OrderService {
             throw new BadRequestException("You cannot create an order without at least informing an item");
         }
 
-        Customer validatedCustomer = validateUser(inputCustomerId);
-        List<OrderItemDto> validatedOrderItems = validateOrderItems(inputOrderItemsDto);
+        Customer validatedCustomer = validateCustomerOnApi(inputCustomerId);
+        List<OrderItemDto> validatedOrderItems = validateOrderItemsOnApi(inputOrderItemsDto);
 
         ArrayList<OrderItem> mapperOrderItems = getOrderItems(validatedOrderItems);
 
@@ -74,7 +93,7 @@ public class OrderService {
 
         order.setTotal(total);
         order.setCustomer(validatedCustomer);
-        order.setStatus(OrderStatus.PROCESSING);
+        order.setStatus(OrderStatus.ORDER_PLACED);
 
         var createdOrder = orderRepository.save(order);
 
@@ -111,7 +130,7 @@ public class OrderService {
     }
 
 
-    private Customer validateUser(Long id) {
+    private Customer validateCustomerOnApi(Long id) {
         CustomerDto customerDto = apiAccountsIntegration.getCustomerById(id);
 
         var localCustomerOpt = customerRepository.findById(customerDto.getId());
@@ -124,7 +143,7 @@ public class OrderService {
         return localCustomerOpt.get();
     }
 
-    private List<OrderItemDto> validateOrderItems(List<OrderItemDto> orderItems) {
+    private List<OrderItemDto> validateOrderItemsOnApi(List<OrderItemDto> orderItems) {
         List<Long> productIds = orderItems.stream()
             .map(OrderItemDto::getProductId).toList();
 
@@ -157,24 +176,6 @@ public class OrderService {
         return validOrderItems;
     }
 
-    public List<OrderDto> findAll() {
-        var orders = orderRepository.findAll();
-        var orderDtos = new ArrayList<OrderDto>();
-
-        for(Order order : orders) {
-            var orderDto = getOrderItemsPerOrder(order);
-            orderDtos.add(orderDto);
-        }
-
-        return orderDtos;
-    }
-
-    public OrderDto findById(Long id) {
-        var order = orderRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Order not found"));
-        return getOrderItemsPerOrder(order);
-    }
-
     private OrderDto getOrderItemsPerOrder(Order order) {
         var orderItems = orderItemRepository.findOrderItemsByOrderId(order.getId());
         var orderItemsDto = new ArrayList<OrderItemDto>();
@@ -189,15 +190,12 @@ public class OrderService {
                 .build());
         }
 
-        var validCustomer = order.getCustomer() != null ? order.getCustomer().getId() : null;
+        return OrderDtoMapper.toDto(order, orderItemsDto);
+    }
 
-        return OrderDto.builder()
-            .id(order.getId())
-            .total(order.getTotal())
-            .customerId(validCustomer)
-            .status(order.getStatus())
-            .orderPlacedIn(order.getOrderPlacedIn())
-            .orderItems(orderItemsDto)
-            .build();
+    public void updateOrderStatus(OrderDto orderDto) {
+        var order = findById(orderDto.getId());
+        order.setStatus(orderDto.getStatus());
+        orderRepository.save(OrderDtoMapper.toEntity(order));
     }
 }

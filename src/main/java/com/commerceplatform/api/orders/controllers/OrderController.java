@@ -1,6 +1,7 @@
 package com.commerceplatform.api.orders.controllers;
 
 import com.commerceplatform.api.orders.dtos.OrderDto;
+import com.commerceplatform.api.orders.models.jpa.Order;
 import com.commerceplatform.api.orders.services.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +32,11 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderDto> findById(@PathVariable("id") Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.findById(id));
+    }
+
+    @PatchMapping
+    public ResponseEntity<OrderDto> updateOrderStatus(@RequestBody OrderDto input) {
+        orderService.updateOrderStatus(input);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
 }
