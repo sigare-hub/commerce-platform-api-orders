@@ -25,7 +25,7 @@ public class RabbitMQConnection {
         return new DirectExchange(EXCHANGE_NAME);
     }
 
-    private Binding binding(Queue queue, DirectExchange directExchange) {
+    private Binding directExchangeBinding(Queue queue, DirectExchange directExchange) {
         return new Binding(
             queue.getName(),
             Binding.DestinationType.QUEUE,
@@ -41,8 +41,8 @@ public class RabbitMQConnection {
 
         DirectExchange exchange = this.directExchange();
 
-        Binding orderBiding = this.binding(orderQueue, exchange);
-        Binding productBinding = this.binding(productQueue, exchange);
+        Binding orderBiding = this.directExchangeBinding(orderQueue, exchange);
+        Binding productBinding = this.directExchangeBinding(productQueue, exchange);
 
         this.amqpAdmin.declareQueue(orderQueue);
         this.amqpAdmin.declareQueue(productQueue);

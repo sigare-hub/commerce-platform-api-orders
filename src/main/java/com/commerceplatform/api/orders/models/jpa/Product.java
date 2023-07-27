@@ -10,7 +10,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "product")
+//Defini como parcial, pois sao abstracoes de uma tabela de um servico externo
+// WIP - Se o servico de produtos estiver fora do ar, eu devo garantir que no minimo a tabela parcial
+// forneca dados temporários (Isso ta no principio de event carried state transfer)
+@Table(name = "partial_product")
 @Builder
 public class Product implements Serializable {
     @Id

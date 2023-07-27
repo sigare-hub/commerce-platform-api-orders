@@ -1,7 +1,6 @@
 package com.commerceplatform.api.orders.controllers;
 
 import com.commerceplatform.api.orders.dtos.OrderDto;
-import com.commerceplatform.api.orders.models.jpa.Order;
 import com.commerceplatform.api.orders.services.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
